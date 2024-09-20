@@ -601,12 +601,39 @@ layout: center
 <h3 class="font-thin">1 === [是] true</h3>
 
 ---
+glowX: 80
+glowY: 50
+---
+
+## 二、命名规范
+<v-clicks>
+### 数据库命名
+使用下划线命名
+```
+user_id
+```
+
+### 代码里
+使用驼峰命名
+```
+userId
+```
+
+### 接口路径
+使用斜线分隔的命名
+```
+user/list
+```
+
+</v-clicks>
+
+---
+glowX: 50
+glowY: 70
 layout: center
 ---
 
-#### 二、命名规范
-
-- 涉及数据库的命名应使用下划线命名，如user_id，涉及代码里的应使用驼峰命名，如userId，涉及接口路径的应使用斜划线分隔的命名，如：user/list。
+# 三、数据库规范
 
 ---
 glowX: 50
@@ -614,19 +641,34 @@ glowY: 10
 layout: center
 ---
 
-#### 三、数据库规范
-
 ##### （1）命名规范
 
 - 建库时每个表每个字段都应写好注释。每个字段的主键应使用表名加id，比如用户表主键应为：user_id。
+
+---
+glowX: 20
+glowY: 30
+layout: center
+---
+
 
 ##### （2）设计规范
 
 - 使用第三范式设计数据库，比如有一个表为menu表，它记录了所有的菜单对应权限，而一个用户可能有多个权限担任，如果将menu_id绑定在user表，那么就可能一个用户有多个列，造成数据冗余。所以应创一个新表，单独记录user与menu的关系。这也相当于一种外键，只不过不是直接在数据库建立外键，而是在代码里进行逻辑上的外键绑定。前者称为物理外键，现在很多大公司都是不允许使用的。
 
+<img src="/2.png" width="400">
+
+---
+glowX: 40
+glowY: 40
+layout: center
+---
+
 ##### （3）结构规范
 
 - 存储重要信息的表都应有以下四个字段（如果非常重要或者公司有要求可能还有更多）：create_id、create_time、update_id、update_time，记录该条数据的操作者及修改时间。并且应有一个日志表来记录这些操作。
+
+<img src="/3.png" width="400">
 
 ---
 glowX: 50
@@ -634,35 +676,162 @@ glowY: 90
 layout: center
 ---
 
-#### 四、代码规范
+## 四、代码规范
+
+---
+glowX: 60
+glowY: 60
+layout: center
+---
 
 ##### （1）代码结构
 
 - 代码应按照功能进行建包，并把相应的类放在对应的包下。比如有若干类执行定时任务，则建一个task包，把所有相关的类放到该包下。
 
+<img src="/4.png" width="700">
+
+---
+glowX: 60
+glowY: 90
+layout: center
+---
+
 ##### （2）类的命名
 
 - 类的命名应见名知意，实体类的命名应按照规范：直接对应数据库的用entity作为后缀，如userEntity，用于接收前端传参的用DTO作为后缀，用于存储数据库查询结果或作为回传前端的实体类后缀应使用VO。
 
+
+---
+glowX: 50
+glowY: 90
+layout: center
+---
+
 ##### （3）复用思想
 
+
 - 有可以复用的方法应专门建个类进行存放，如从数据库获取token。
+
+```java
+public class UserRequestUtils {
+    /**
+     * 获取请求头中的token工具类
+     */
+    public static String getCurrentToken() {
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
+                .getRequest();
+        return request.getHeader("token");
+    }
+}
+```
+
+
+
+
+---
+glowX: 50
+glowY: 90
+layout: center
+---
 
 ##### （4）参数配置
 
 - 尽量配置在配置文件yml中，进行统一管理。
 
+<img src="/5.png" width="400">
+
+---
+glowX: 10
+glowY: 10
+layout: center
+---
+
 ##### （5）项目日志
 
 - 区别于数据库日志是记录操作的，项目日志是为了方便维护的，便于报错时直接定位到是哪个方法出现了问题。
+
+```java
+log.info("用户注册")
+```
+
+---
+glowX: 50
+glowY: 10
+layout: center
+---
 
 ##### （6）数据校验
 
 - 有时候前端传来的数据是非法的，如学号是10位，实际传的却不是，有可能是用户填写错误，这时应进行校验，如是非法数据应返回提示给用户。
 
+<img src="/6.png" width="600">
+
+---
+glowX: 50
+glowY: 90
+layout: center
+---
+
 ##### （7）异常处理
 
 - 在可能导致报错的地方应使用try catch包围，并做好异常的记录，方便后续维护。
+
+```java {2,8-10}{lines:true}
+public static String generateValue(String param) {
+    try {
+        MessageDigest algorithm = MessageDigest.getInstance("MD5");
+        algorithm.reset();
+        algorithm.update(param.getBytes());
+        byte[] messageDigest = algorithm.digest();
+        return toHexString(messageDigest);
+    } catch (Exception e) {
+        throw new RRException("生成Token失败", e);
+    }
+}
+```
+
+---
+glowX: 10
+glowY: 10
+glowSize: 0.9
+layout: center
+---
+
+<h1 class="op50 font-thin">  提交规范 </h1>
+
+---
+layout: center
+---
+
+```
+'feat',//新功能（feature）
+'fix',//修改bug
+'perf',//表示该提交用于提高性能
+'style',//代码格式修改, 注意不是 css 修改(不影响代码运行的变动)
+'docs',//文档修改（documentation）
+'test',//表示该提交用于测试代码
+'refactor',//代码重构
+'build',//编译相关的修改，例如发布版本、对项目构建或者依赖的改动
+'ci',//持续集成
+'chore',//其他修改, 比如改变构建流程、或者增加依赖库、工具等
+'revert',//回滚到上一个版本
+'wip',//大改动但未完成，方便知道你还在work
+```
+
+---
+glowX: 10
+glowY: 90
+glowSize: 0.9
+---
+### front-end: practicing
+
+<div class="flex gap-2">
+<img src="/7.png" width="200">
+<img src="/8.png" width="200">
+<img src="/9.png" width="200">
+<img src="/10.png" width="200">
+</div>
+
 
 ---
 glowX: 10
